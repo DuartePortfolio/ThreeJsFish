@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discombobulator the Fish</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #score, #lives {
+            position: absolute;
+            font-size: 24px;
+            color: white;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+        #score {
+            top: 10px;
+            left: 10px;
+        }
+        #lives {
+            top: 10px;
+            right: 10px;
+        }
+        #life-lost {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: red;
+            display: none;
+        }
+    </style>
+    <script>
+        window.onload = function() {
+            alert("Welcome! Use your mouse to move the fish and avoid the red squares. Collect the food (black squares) to increase your score. Good luck! - Discombobulator the Fish");
+        }
+    </script>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <div id="lives">Lives: 3</div>
+    <div id="life-lost">Life Lost!</div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Scene, Camera, Render
+        const scene = new THREE.Scene();
+        const loader = new THREE.TextureLoader();
+        loader.load('./background2.jpg', function(texture) {
+            scene.background = texture;
+        });
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 25);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableRotate = false;
+
+        function createBox(width, height, depth, color, x, y, z) {
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshStandardMaterial({ color: color });
+            const box = new THREE.Mesh(geometry, material);
+            box.position.set(x, y, z);
+            return box;
+        }
+
+        // Body
+        const body = createBox(1.5, 1, 1, 0xff6a00, 0, 0, 0); 
+
+        // Eyes
+        const leftEye = createBox(0.25, 0.5, 0.1, 0x000000, -0.4, 0, 0.5);
+        const rightEye = createBox(0.25, 0.5, 0.1, 0x000000, -0.5, 0, -0.5);
+
+        
+        // Lower Fins
+        const lowerFinLeft1 = createBox(0.3, 0, 0.6, 0xff9c00, 0.85, -0.45, 1);
+        const lowerFinLeft2 = createBox(0.3, 0, 0.6, 0xff9c00, 0.65, -0.45, 0.8);
+        const lowerFinLeft3 = createBox(0.2, 0, 0.7, 0xff9c00, 0.45, -0.45, 0.6);
+        const lowerFinRight1 = createBox(0.2, 0, 0.5, 0xff9c00, 0.85, -0.45, -0.95);
+        const lowerFinRight2 = createBox(0.2, 0, 0.7, 0xff9c00, 0.65, -0.45, -0.7);
+        const lowerFinRight3 = createBox(0.2, 0, 0.7, 0xff9c00, 0.45, -0.45, -0.5);
+
+        // Tail
+        const tailBase = createBox(1, 0.7, 0.5, 0xff6e00, 1, 0, 0);
+        const tailFin1 = createBox(0.8, 0.2, 0, 0xffbf00, 2.4, 0.4, 0);
+        const tailFin2 = createBox(1.4, 0.2, 0, 0xffe511, 1.7, 0.2, 0);
+        const tailFin3 = createBox(0.5, 0.2, 0, 0xff9c00, 1.7, 0, 0);
+        const tailFin4 = createBox(1.4, 0.2, 0, 0xffe511, 1.7, -0.2, 0);
+        const tailFin5 = createBox(0.8, 0.2, 0, 0xffbf00, 2.4, -0.4, 0);
+
+        // Upper Fins
+        const upperFinLeft1 = createBox(0.2, 0, 0.5, 0xff9c00, -0.7, -0.4, 0.95);
+        const upperFinLeft2 = createBox(0.2, 0, 0.7, 0xff9c00, -0.5, -0.4, 0.7);
+        const upperFinLeft3 = createBox(0.2, 0, 0.7, 0xff9c00, -0.3, -0.4, 0.5);
+        const upperFinRight1 = createBox(0.2, 0, 0.5, 0xff9c00, -0.7, -0.4, -0.95);
+        const upperFinRight2 = createBox(0.2, 0, 0.7, 0xff9c00, -0.5, -0.4, -0.7);
+        const upperFinRight3 = createBox(0.2, 0, 0.7, 0xff9c00, -0.3, -0.4, -0.5);
+
+        // Dorsal Fin
+        const dorsalFin1 = createBox(1.85, 0.2, 0, 0xffbf00, 0.6, 0.6, 0);
+
+        const dorsalFin2 = createBox(1.35, 0.2, 0, 0xffbf00, 0.35, 0.8, 0);
+
+        const dorsalFin3 = createBox(0.675, 0.2, 0, 0xffbf00, 0.01, 1, 0);
+
+
+       const pointLight = new THREE.PointLight(0xffffff, 200, 100);
+        pointLight.position.set(-1, 5, 3);
+        scene.add(pointLight);
+
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const pointLight2 = new THREE.PointLight(0xffffff, 100, 50);
+        pointLight2.position.set(2, 2, 2);
+        scene.add(pointLight2);
+
+        const pointLight3 = new THREE.PointLight(0xffffff, 100, 50);
+        pointLight3.position.set(-2, -2, -2);
+        scene.add(pointLight3);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(0, 10, 10);
+        scene.add(directionalLight);
+
+        // Light helper
+        //const pointLightHelper = new THREE.PointLightHelper(pointLight);
+        //scene.add(pointLightHelper);
+
+        //const pointLightHelper2 = new THREE.PointLightHelper(pointLight2);
+        //scene.add(pointLightHelper2);
+
+        //const pointLightHelper3 = new THREE.PointLightHelper(pointLight3);
+        //scene.add(pointLightHelper3);
+
+        //const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight);
+        //scene.add(directionalLightHelper);
+
+
+        const fish = new THREE.Group();
+
+        const bodyGroup = new THREE.Group();
+        bodyGroup.add(body);
+        bodyGroup.add(leftEye);
+        bodyGroup.add(rightEye);
+
+        const tailBaseGroup = new THREE.Group();
+        tailBaseGroup.add(tailBase);
+
+        const tailFinsGroup = new THREE.Group();
+        tailFinsGroup.add(tailFin1);
+        tailFinsGroup.add(tailFin2);
+        tailFinsGroup.add(tailFin3);
+        tailFinsGroup.add(tailFin4);
+        tailFinsGroup.add(tailFin5);
+        
+
+        const upperFinsRightGroup = new THREE.Group();
+        upperFinsRightGroup.add(upperFinRight1);
+        upperFinsRightGroup.add(upperFinRight2);
+        upperFinsRightGroup.add(upperFinRight3);
+
+        const upperFinsLeftGroup = new THREE.Group();
+        upperFinsLeftGroup.add(upperFinLeft1);
+        upperFinsLeftGroup.add(upperFinLeft2);
+        upperFinsLeftGroup.add(upperFinLeft3);
+
+        const lowerFinsLeftGroup = new THREE.Group();
+        lowerFinsLeftGroup.add(lowerFinLeft1);
+        lowerFinsLeftGroup.add(lowerFinLeft2);
+        lowerFinsLeftGroup.add(lowerFinLeft3);
+
+        const lowerFinsRightGroup = new THREE.Group();
+        lowerFinsRightGroup.add(lowerFinRight1);
+        lowerFinsRightGroup.add(lowerFinRight2);
+        lowerFinsRightGroup.add(lowerFinRight3);
+
+        const dorsalFinsGroup = new THREE.Group();
+        dorsalFinsGroup.add(dorsalFin1);
+        dorsalFinsGroup.add(dorsalFin2);
+        dorsalFinsGroup.add(dorsalFin3);
+
+
+        fish.add(bodyGroup);
+        fish.add(lowerFinsRightGroup);
+        fish.add(lowerFinsLeftGroup);
+        fish.add(tailBaseGroup);
+        fish.add(tailFinsGroup);
+        fish.add(upperFinsRightGroup);
+        fish.add(upperFinsLeftGroup);
+        fish.add(dorsalFinsGroup);
+
+        scene.add(fish);
+
+        const clock = new THREE.Clock();
+
+        let targetPosition = new THREE.Vector3();
+        let lastSquareTime = 0;
+        let lastEvilSquareTime = 0;
+        const squares = [];
+        const evilSquares = [];
+        let score = 0;
+        let lives = 3;
+
+        window.addEventListener('mousemove', (event) => { // funcao corre sempre que o rato se move
+            const mouseX = (event.clientX/window.innerWidth) * 2 - 1; 
+            const mouseY = -(event.clientY/window.innerHeight) * 2 + 1; // definir posicao do rato no plano 2d
+            const vector = new THREE.Vector3(mouseX, mouseY, 0.5); // cria um vetor com posicao do rato
+            vector.unproject(camera); // converte o vetor 2d para 3d
+            const dir = vector.sub(camera.position).normalize(); // encontrar a direcao da linha que vai do peixe ao rato
+            const distance = -camera.position.z/dir.z; // encontrar a distancia do peixe ao rato no plano 3d
+            targetPosition = camera.position.clone().add(dir.multiplyScalar(distance)); // copia posicao da camera e adiciona a direcao multiplicada pela distancia entre o peixe e o rato
+        });
+
+        function createRandomSquare() {
+            const size = 1;
+            const color = 0x000000;
+            const x = fish.position.x + (Math.random() - 0.5) * 20;
+            const y = fish.position.y + (Math.random() - 0.5) * 20;
+            const z = fish.position.z;
+            const square = createBox(size, size, size, color, x, y, z);
+            scene.add(square);
+            squares.push(square);
+
+            setTimeout(() => {
+                scene.remove(square);
+                const index = squares.indexOf(square);
+                if (index > -1) {
+                    squares.splice(index, 1);
+                }
+            }, 4000);
+        }
+
+        function createRandomEvilSquare() {
+            const size = 1;
+            const color = 0xff0000;
+            const x = fish.position.x + (Math.random() - 0.5) * 20;
+            const y = fish.position.y + (Math.random() - 0.5) * 20;
+            const z = fish.position.z;
+            const evilSquare = createBox(size, size, size, color, x, y, z);
+            scene.add(evilSquare);
+            evilSquares.push(evilSquare);
+
+            setTimeout(() => {
+                scene.remove(evilSquare);
+                const index = evilSquares.indexOf(evilSquare);
+                if (index > -1) {
+                    evilSquares.splice(index, 1);
+                }
+            }, 10000);
+        }
+
+        function checkCollisions() {
+            const fishBox = new THREE.Box3().setFromObject(fish);
+            squares.forEach((square, index) => {
+                const squareBox = new THREE.Box3().setFromObject(square);
+                if (fishBox.intersectsBox(squareBox)) {
+                    scene.remove(square);
+                    squares.splice(index, 1);
+                    score += 1000;
+                    document.getElementById('score').innerText = `Score: ${score}`;
+                }
+            });
+            evilSquares.forEach((evilSquare, index) => {
+                const evilSquareBox = new THREE.Box3().setFromObject(evilSquare);
+                if (fishBox.intersectsBox(evilSquareBox)) {
+                    scene.remove(evilSquare);
+                    evilSquares.splice(index, 1);
+                    lives -= 1;
+                    document.getElementById('lives').innerText = `Lives: ${lives}`;
+                    const lifeLostElement = document.getElementById('life-lost');
+                    lifeLostElement.style.display = 'block';
+                    setTimeout(() => {
+                        lifeLostElement.style.display = 'none';
+                    }, 1000);
+                    if (lives <= 0) {
+                        alert('Game Over!');
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = clock.getElapsedTime();
+
+            bodyGroup.rotation.y = Math.sin(time * 10) * 0.04;
+
+            tailBaseGroup.rotation.y = Math.sin(time * 10) * 0.15;
+
+            tailFinsGroup.rotation.y = Math.sin(time * 10) * 0.25;
+
+            upperFinsLeftGroup.rotation.x = Math.sin(time * 15) * 0.15;
+
+            upperFinsRightGroup.rotation.x = Math.sin(time * -15) * 0.15;
+
+            lowerFinsLeftGroup.rotation.x = Math.sin(time * 10) * 0.05;
+            
+            lowerFinsRightGroup.rotation.x = Math.sin(time * -10) * 0.05;
+
+            dorsalFinsGroup.rotation.x = Math.sin(time * 15) * 0.05;
+
+            fish.position.lerp(targetPosition, 0.02);
+
+            const direction = targetPosition.clone().sub(fish.position); // encontrar a direcao do peixe ao rato
+            const angle = Math.atan2(direction.y, direction.x);
+            fish.rotation.z = angle + Math.PI; // roda o peixe para ficar sempre virado com a cabeça para o rato
+
+            if (time - lastSquareTime > 1) {
+                createRandomSquare();
+                lastSquareTime = time;
+            }
+
+            if (time - lastEvilSquareTime > 3) { 
+                createRandomEvilSquare();
+                lastEvilSquareTime = time;
+            }
+
+            checkCollisions();
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

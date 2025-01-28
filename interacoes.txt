@@ -1,0 +1,9 @@
+Movimento do Peixe
+Rato:
+O peixe segue a posição do cursor do rato. Sempre que mexes o rato, a posição do peixe ajusta-se para se dirigir ao local onde o cursor está no ecrã.
+Interações
+Quadrados Pretos (Comida):
+Move o peixe para apanhar os quadrados pretos. Cada quadrado apanhado aumenta a pontuação em 1000 pontos.
+Quadrados Vermelhos (Obstáculos):
+Evita tocar nos quadrados vermelhos. Se colidires com um, perdes uma vida.
+Começas com 3 vidas, perdes o jogo se as vidas chegarem a 0, e o jogo recomeça automaticamente.
